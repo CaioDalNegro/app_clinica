@@ -1,0 +1,42 @@
+package br.com.medpro.medpro.model.entity;
+
+import br.com.medpro.medpro.model.dto.DadosCadastroMedico;
+import br.com.medpro.medpro.model.dto.DadosCadastroPaciente;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "pacientes")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+public class Paciente {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String nome;
+    private String email;
+    private String telefone;
+    private String cpf;
+
+    @Embedded
+    private Endereco endereco;
+
+    public Paciente(DadosCadastroPaciente dados) {
+        this.nome = dados.nome();
+        this.email = dados.email();
+        this.telefone = dados.telefone();
+        this.endereco = new Endereco(dados.endereco());
+    }
+}
