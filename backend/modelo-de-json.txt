@@ -1,0 +1,32 @@
+{
+  "nome": "João da Silva",
+  "email": "joao.silva@example.com",
+  "telefone": "(11) 91234-5678",
+  "cpf": "12345678900",
+  "endereco": {
+    "logradouro": "Rua das Flores",
+    "bairro": "Jardim Primavera",
+    "cep": "12345-678",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "numero": "123",
+    "complemento": "Apto 45B"
+  }
+}
+
+{
+  "nome": "João da Silva",
+  "email": "joao.silva@example.com",
+  "telefone": "(11) 91234-5678",
+  "crm": "12345678900",
+  "especialidade": "GINECOLOGIA",
+  "endereco": {
+    "logradouro": "Rua das Flores",
+    "bairro": "Jardim Primavera",
+    "cep": "12345-678",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "numero": "123",
+    "complemento": "Apto 45B"
+  }
+}
