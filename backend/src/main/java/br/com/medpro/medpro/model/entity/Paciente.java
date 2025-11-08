@@ -37,6 +37,7 @@ public class Paciente {
         this.nome = dados.nome();
         this.email = dados.email();
         this.telefone = dados.telefone();
+        this.cpf = dados.cpf();
         this.endereco = new Endereco(dados.endereco());
     }
 }
