@@ -4,6 +4,7 @@ import br.com.medpro.medpro.model.entity.Medico;
 import br.com.medpro.medpro.model.enums.Especialidade;
 
 public record DadosListagemMedico(
+    Long id,
     String nome, 
     String email, 
     String crm, 
@@ -11,6 +12,7 @@ public record DadosListagemMedico(
 
     public DadosListagemMedico(Medico medico){
         this(
+            medico.getId(),
             medico.getNome(),
             medico.getEmail(),
             medico.getCrm(),
