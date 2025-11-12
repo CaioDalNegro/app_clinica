@@ -1,8 +1,8 @@
-package br.com.medpro.medpro.model.enums;
+package com.medpro.medpro.enums;
 
 public enum Especialidade {
     CARDIOLOGIA,
     DERMATOLOGIA,
-    GINECOLOGIA,
+    GINICOLOGIA,
     ORTOPEDIA;
 }

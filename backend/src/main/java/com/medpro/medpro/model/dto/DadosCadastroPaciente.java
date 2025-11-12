@@ -1,4 +1,4 @@
-package br.com.medpro.medpro.model.dto;
+package com.medpro.medpro.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

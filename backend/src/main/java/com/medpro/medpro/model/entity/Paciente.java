@@ -1,7 +1,7 @@
-package br.com.medpro.medpro.model.entity;
+package com.medpro.medpro.model.entity;
 
-import br.com.medpro.medpro.model.dto.DadosCadastroMedico;
-import br.com.medpro.medpro.model.dto.DadosCadastroPaciente;
+import com.medpro.medpro.model.dto.DadosAtualizacaoPaciente;
+import com.medpro.medpro.model.dto.DadosCadastroPaciente;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,11 +33,31 @@ public class Paciente {
     @Embedded
     private Endereco endereco;
 
+    private boolean ativo;
+
     public Paciente(DadosCadastroPaciente dados) {
+        this.ativo = true;
         this.nome = dados.nome();
         this.email = dados.email();
         this.telefone = dados.telefone();
         this.cpf = dados.cpf();
         this.endereco = new Endereco(dados.endereco());
+    }
+
+    public void atualizarInformacoes(DadosAtualizacaoPaciente dados) {
+        if (dados.email() != null) {
+            if (dados.email().isBlank())
+                throw new IllegalArgumentException("Email não pode estar em branco.");
+            this.nome = dados.email();
+        }
+        if (dados.cpf() != null) {
+            if (dados.cpf().isBlank())
+                throw new IllegalArgumentException("CPF não pode estar em branco.");
+            this.telefone = dados.cpf();
+        }
+    }
+
+    public void excluir(){
+        this.ativo = false;
     }
 }

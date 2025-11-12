@@ -1,6 +1,6 @@
-package br.com.medpro.medpro.model.dto;
+package com.medpro.medpro.model.dto;
 
-import br.com.medpro.medpro.model.entity.Paciente;
+import com.medpro.medpro.model.entity.Paciente;
 
 public record DadosListagemPaciente(
     String nome, 

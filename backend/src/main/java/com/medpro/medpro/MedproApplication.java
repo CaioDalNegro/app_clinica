@@ -1,4 +1,4 @@
-package br.com.medpro.medpro;
+package com.medpro.medpro;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
