@@ -34,7 +34,7 @@ public class Paciente {
     private Endereco endereco;
 
     private boolean ativo;
-
+    
     public Paciente(DadosCadastroPaciente dados) {
         this.ativo = true;
         this.nome = dados.nome();

@@ -1,3 +1,4 @@
+-----------Paciente-------------
 {
   "nome": "João da Silva",
   "email": "joao.silva@example.com",
@@ -14,19 +15,20 @@
   }
 }
 
+-----------Medico-------------
 {
-  "nome": "João da Silva",
-  "email": "joao.silva@example.com",
-  "telefone": "(11) 91234-5678",
-  "crm": "12345678900",
-  "especialidade": "GINECOLOGIA",
+  "nome": "Caio Dal Negro",
+  "email": "caio@medpro.com",
+  "telefone": "11912345678",
+  "crm": "123456",
+  "especialidade": "GINICOLOGIA",
   "endereco": {
     "logradouro": "Rua das Flores",
     "bairro": "Jardim Primavera",
-    "cep": "12345-678",
+    "cep": "12345678",
     "cidade": "São Paulo",
     "uf": "SP",
-    "numero": "123",
-    "complemento": "Apto 45B"
+    "numero": "54",
+    "complemento": "Telesp"
   }
 }
