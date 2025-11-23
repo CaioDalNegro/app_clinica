@@ -12,8 +12,8 @@ import com.medpro.medpro.model.entity.Paciente;
 @Repository
 public interface ConsultaRepository extends JpaRepository <Consulta, Long>{
     
-    boolean existsByPacienteAndDataHoraConsulta(LocalDateTime dataHoraConsulta, Paciente paciente);  // Verifica se o paciente já tem consulta
-    boolean existsByMedicoAndDataHoraConsulta(LocalDateTime dataHoraConsulta, Medico medico);  // Verifica se o médico já tem consulta
+    boolean existsByPacienteAndDataHoraConsulta(Paciente paciente, LocalDateTime dataHoraConsulta); // Verifica se o paciente já tem consulta na mesma data/hora
+    boolean existsByMedicoAndDataHoraConsulta(Medico medico, LocalDateTime dataHoraConsulta); // Verifica se o médico já tem consulta na mesma data/hora
 
     //List<Consulta> findByDataHoraConsulta(LocalDateTime dataHoraConsulta);
 }

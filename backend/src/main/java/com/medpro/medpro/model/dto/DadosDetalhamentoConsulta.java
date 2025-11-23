@@ -14,6 +14,6 @@ public record DadosDetalhamentoConsulta(
             this(consulta.getId(),
             consulta.getPaciente().getId(),
             consulta.getMedico().getId(),
-            consulta.getDataHora());
+            consulta.getDataHoraConsulta());
         }
 }

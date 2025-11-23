@@ -27,12 +27,19 @@ public class Consulta {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_paciente")
+    @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 
     @ManyToOne
-    @JoinColumn(name = "id_medico")
+    @JoinColumn(name = "id_medico", nullable = false)
     private Medico medico;
 
-    private LocalDateTime DataHora;
+    private LocalDateTime dataHoraConsulta;
+
+    // --- Regra de negócio na própria entidade ---
+    public void validarData() {
+        if (this.dataHoraConsulta.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("A consulta não pode ser marcada no passado.");
+        }
+    }
 }
