@@ -2,6 +2,7 @@ package com.medpro.medpro.model.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,7 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Consulta {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,6 +35,7 @@ public class Consulta {
     @JoinColumn(name = "id_medico", nullable = false)
     private Medico medico;
 
+    @Column(name = "data_hora_consulta", nullable = false)
     private LocalDateTime dataHoraConsulta;
 
     // --- Regra de negócio na própria entidade ---

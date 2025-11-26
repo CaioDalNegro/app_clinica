@@ -32,3 +32,11 @@
     "complemento": "Telesp"
   }
 }
+
+--------------------------------------
+Consultas:
+{
+  "idPaciente": 1,
+  "idMedico": 1,
+  "dataHora": "2025-12-10T15:30:00"
+}
