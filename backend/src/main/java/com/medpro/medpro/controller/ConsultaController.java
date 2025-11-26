@@ -1,6 +1,17 @@
 package com.medpro.medpro.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.medpro.medpro.model.dto.DadosAgendamentoConsulta;
+import com.medpro.medpro.model.dto.DadosCancelamentoConsulta;
 import com.medpro.medpro.model.entity.Consulta;
 import com.medpro.medpro.model.entity.Medico;
 import com.medpro.medpro.model.entity.Paciente;
@@ -10,10 +21,6 @@ import com.medpro.medpro.repository.PacienteRepository;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("consultas")
@@ -99,4 +106,27 @@ public class ConsultaController {
         consultaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    // CANCELAR CONSULTA -------------------------------------------->
+@PostMapping("/cancelar")
+@Transactional
+public ResponseEntity<?> cancelar(@RequestBody @Valid DadosCancelamentoConsulta dados) {
+
+    // Busca consulta
+    var consulta = consultaRepository.findById(dados.idConsulta());
+
+    if (consulta.isEmpty()) {
+        return ResponseEntity.badRequest().body("Consulta não encontrada.");
+    }
+
+    // Regra de negócio: validar cancelamento (mínimo 24h e motivo obrigatório)
+    try {
+        consulta.get().cancelar(dados.motivo());
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    return ResponseEntity.ok("Consulta cancelada com sucesso.");
+}
+
 }
