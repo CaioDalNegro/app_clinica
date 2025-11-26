@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Pacientes</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+input, button { padding: 8px; margin: 5px; }
+table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+td, th { border: 1px solid #aaa; padding: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Pacientes</h1>
+
+<h2>Cadastrar Paciente</h2>
+<input id="nome" placeholder="Nome">
+<input id="email" placeholder="E-mail">
+<input id="cpf" placeholder="CPF">
+<button onclick="cadastrar()">Cadastrar</button>
+
+<h2>Lista de Pacientes</h2>
+<button onclick="listar()">Atualizar lista</button>
+
+<table id="tabela">
+    <tr><th>ID</th><th>Nome</th><th>Email</th><th>Ações</th></tr>
+</table>
+
+<script>
+const API = "http://localhost:8080/pacientes";
+
+async function cadastrar() {
+    const body = {
+        nome: nome.value,
+        email: email.value,
+        cpf: cpf.value
+    };
+
+    await fetch(API, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+
+    alert("Paciente cadastrado!");
+    listar();
+}
+
+async function listar() {
+    const resp = await fetch(API);
+    const data = await resp.json();
+
+    const tabela = document.getElementById("tabela");
+    tabela.innerHTML = "<tr><th>ID</th><th>Nome</th><th>Email</th><th>Ações</th></tr>";
+
+    data.content.forEach(p => {
+        tabela.innerHTML += `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.nome}</td>
+                <td>${p.email}</td>
+                <td>
+                    <button onclick="excluir(${p.id})">Excluir</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function excluir(id) {
+    await fetch(API + "/" + id, { method: "DELETE" });
+    alert("Paciente removido");
+    listar();
+}
+
+listar();
+</script>
+</body>
+</html>

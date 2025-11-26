@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Médicos</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+input, button { padding: 8px; margin: 5px; }
+table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+td, th { border: 1px solid #aaa; padding: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Médicos</h1>
+
+<h2>Cadastrar Médico</h2>
+<input id="nome" placeholder="Nome">
+<input id="crm" placeholder="CRM">
+<input id="especialidade" placeholder="Especialidade">
+<button onclick="cadastrar()">Cadastrar</button>
+
+<h2>Lista de Médicos</h2>
+<button onclick="listar()">Atualizar lista</button>
+
+<table id="tabela">
+    <tr><th>ID</th><th>Nome</th><th>CRM</th><th>Especialidade</th><th>Ações</th></tr>
+</table>
+
+<script>
+const API = "http://localhost:8080/medicos";
+
+async function cadastrar() {
+    const body = {
+        nome: nome.value,
+        crm: crm.value,
+        especialidade: especialidade.value
+    };
+
+    await fetch(API, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+
+    alert("Médico cadastrado!");
+    listar();
+}
+
+async function listar() {
+    const resp = await fetch(API);
+    const data = await resp.json();
+
+    const tabela = document.getElementById("tabela");
+    tabela.innerHTML = "<tr><th>ID</th><th>Nome</th><th>CRM</th><th>Especialidade</th><th>Ações</th></tr>";
+
+    data.content.forEach(m => {
+        tabela.innerHTML += `
+            <tr>
+                <td>${m.id}</td>
+                <td>${m.nome}</td>
+                <td>${m.crm}</td>
+                <td>${m.especialidade}</td>
+                <td>
+                    <button onclick="excluir(${m.id})">Excluir</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function excluir(id) {
+    await fetch(API + "/" + id, { method: "DELETE" });
+    alert("Médico removido");
+    listar();
+}
+
+listar();
+</script>
+</body>
+</html>

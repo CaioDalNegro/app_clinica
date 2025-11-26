@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Consultas</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+input, button, select { padding: 8px; margin: 5px; }
+table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+td, th { border: 1px solid #aaa; padding: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Consultas</h1>
+
+<h2>Agendar Consulta</h2>
+<input id="idPaciente" placeholder="ID Paciente">
+<input id="idMedico" placeholder="ID Médico">
+<input id="dataHora" type="datetime-local">
+<button onclick="agendar()">Agendar</button>
+
+<h2>Cancelar Consulta</h2>
+<input id="cancelId" placeholder="ID da consulta">
+<select id="motivo">
+    <option value="PACIENTE_DESISTIU">Paciente desistiu</option>
+    <option value="MEDICO_CANCELOU">Médico cancelou</option>
+    <option value="OUTROS">Outros</option>
+</select>
+<button onclick="cancelar()">Cancelar</button>
+
+<h2>Lista de Consultas</h2>
+<button onclick="listar()">Atualizar Lista</button>
+
+<table id="tabela">
+    <tr><th>ID</th><th>Paciente</th><th>Médico</th><th>Data</th><th>Cancelada</th><th>Ações</th></tr>
+</table>
+
+<script>
+const API = "http://localhost:8080/consultas";
+
+async function agendar() {
+    const body = {
+        idPaciente: Number(idPaciente.value),
+        idMedico: Number(idMedico.value),
+        dataHora: dataHora.value
+    };
+
+    const resp = await fetch(API, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+
+    const txt = await resp.text();
+    alert(txt);
+    listar();
+}
+
+async function cancelar() {
+    const body = {
+        idConsulta: Number(cancelId.value),
+        motivo: motivo.value
+    };
+
+    const resp = await fetch(API + "/cancelar", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+
+    const txt = await resp.text();
+    alert(txt);
+    listar();
+}
+
+async function listar() {
+    const resp = await fetch(API);
+    const data = await resp.json();
+
+    const tabela = document.getElementById("tabela");
+    tabela.innerHTML = "<tr><th>ID</th><th>Paciente</th><th>Médico</th><th>Data</th><th>Cancelada?</th><th>Ações</th></tr>";
+
+    data.forEach(c => {
+        tabela.innerHTML += `
+            <tr>
+                <td>${c.id}</td>
+                <td>${c.paciente.id}</td>
+                <td>${c.medico.id}</td>
+                <td>${c.dataHoraConsulta}</td>
+                <td>${c.cancelada ? "Sim" : "Não"}</td>
+                <td><button onclick="excluir(${c.id})">Excluir</button></td>
+            </tr>
+        `;
+    });
+}
+
+async function excluir(id) {
+    await fetch(API + "/" + id, { method: "DELETE" });
+    alert("Consulta removida");
+    listar();
+}
+
+listar();
+</script>
+</body>
+</html>
