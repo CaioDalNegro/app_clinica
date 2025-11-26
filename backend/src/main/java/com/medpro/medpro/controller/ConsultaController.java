@@ -129,4 +129,5 @@ public ResponseEntity<?> cancelar(@RequestBody @Valid DadosCancelamentoConsulta 
     return ResponseEntity.ok("Consulta cancelada com sucesso.");
 }
 
+
 }
