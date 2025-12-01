@@ -1,5 +1,6 @@
 package com.medpro.medpro.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -10,5 +11,8 @@ import com.medpro.medpro.model.entity.Medico;
 
 public interface MedicoRepository extends JpaRepository<Medico, Long>{
     Page<Medico> findAllByAtivoTrue(Pageable paginacao);
-    List<Medico> findAllByAtivoTrue();
+    // List<Medico> findAllByAtivoTrue();
+
+    // lista médicos ativos
+    List<Medico> findByAtivoTrue();
 }

@@ -43,20 +43,31 @@ public class Consulta {
     @Column(name = "data_hora_consulta", nullable = false)
     private LocalDateTime dataHoraConsulta;
 
-    // --- Regra de negócio na própria entidade ---
-    public void validarData() {
-        if (this.dataHoraConsulta.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("A consulta não pode ser marcada no passado.");
-        }
-    }
-    // indica se a consulta já foi cancelada
     private boolean cancelada;
 
-    // guarda o motivo (obrigatório)
-@Enumerated(EnumType.STRING)
-private MotivoCancelamento motivoCancelamento;
+    // --- Regra de negócio na própria entidade ---
+    public void validarDataInicial() {
+        if (this.dataHoraConsulta.isBefore(LocalDateTime.now().plusMinutes(30))) {
+            throw new IllegalArgumentException("Consulta deve ser agendada com 30 minutos de antecedência.");
+        }
 
- public void cancelar(MotivoCancelamento motivo) {
+        int hora = dataHoraConsulta.getHour();
+        int diaSemana = dataHoraConsulta.getDayOfWeek().getValue(); // 1=Segunda ... 7=Domingo
+
+        if (diaSemana == 7) {
+            throw new IllegalArgumentException("A clínica não funciona aos domingos.");
+        }
+
+        if (hora < 7 || hora >= 19) {
+            throw new IllegalArgumentException("Horário fora do expediente (07:00 às 19:00).");
+        }
+    }
+
+    // guarda o motivo (obrigatório)
+    @Enumerated(EnumType.STRING)
+    private MotivoCancelamento motivoCancelamento;
+
+    public void cancelar(MotivoCancelamento motivo) {
 
         // valida se já está cancelada
         if (this.cancelada) {
