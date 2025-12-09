@@ -3,7 +3,7 @@ services:
     image: mysql:8.0
     container_name: mysql_medpro
     environment:
-      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: medpro_api
     ports:
       - "3308:3306"

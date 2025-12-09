@@ -1,5 +1,5 @@
-// src/screens/Medico/Op1Screen.js (Reescrito)
-import React, { useState, useMemo } from 'react';
+// src/screens/Medico/Op1Screen.js
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -13,22 +13,23 @@ import {
   Button,
   Image
 } from 'react-native';
+import api from '../../services/api';
+import { useIsFocused } from '@react-navigation/native';
 
-// Ícones (você precisará ter esses arquivos PNG ou usar uma biblioteca de ícones)
-// Assumindo que você tem um ícone de lupa e um triângulo/seta
-const IconeLupa = require('../../../assets/lupa.png'); // Exemplo
-const IconeSeta = require('../../../assets/seta.png'); // Exemplo
+// Ícones
+const IconeLupa = require('../../../assets/lupa.png');
+const IconeSeta = require('../../../assets/seta.png');
 
-// Habilita LayoutAnimation para Android
+// Habilitar LayoutAnimation no Android
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 }
 
-// =========================================================================
-// FUNÇÃO AUXILIAR PARA AGRUPAR E FILTRAR OS DADOS
-// =========================================================================
+// =====================================================================
+// FUNÇÃO PARA AGRUPAR E FILTRAR
+// =====================================================================
 const groupAndFilterMedicos = (medicos, searchText) => {
   const filteredMedicos = medicos.filter(medico => 
     medico.nome.toLowerCase().includes(searchText.toLowerCase()) || 
@@ -37,46 +38,40 @@ const groupAndFilterMedicos = (medicos, searchText) => {
 
   const grouped = filteredMedicos.reduce((acc, medico) => {
     const firstLetter = medico.nome[0].toUpperCase();
-    if (!acc[firstLetter]) {
-      acc[firstLetter] = [];
-    }
+    if (!acc[firstLetter]) acc[firstLetter] = [];
     acc[firstLetter].push(medico);
     return acc;
   }, {});
 
-  // Converte o objeto agrupado para o formato do SectionList
-  const sections = Object.keys(grouped)
-    .sort() // Garante a ordem alfabética das seções
+  return Object.keys(grouped)
+    .sort()
     .map(letter => ({
       title: letter,
       data: grouped[letter],
     }));
-
-  return sections;
 };
 
-// =========================================================================
-// COMPONENTE CARD EXPANSÍVEL
-// =========================================================================
+// =====================================================================
+// CARD DO MÉDICO
+// =====================================================================
 const MedicoCard = ({ medico, navigation }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
-    // Anima a mudança de layout
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded(!isExpanded);
   };
 
   return (
     <View style={cardStyles.card}>
-      {/* SEÇÃO PRINCIPAL VISÍVEL */}
       <TouchableOpacity onPress={toggleExpand} style={cardStyles.mainInfo}>
         <View>
           <Text style={cardStyles.nome}>{medico.nome}</Text>
-          <Text style={cardStyles.especialidade}>{medico.especialidade} | CRM: {medico.crm}</Text>
+          <Text style={cardStyles.especialidade}>
+            {medico.especialidade} | CRM: {medico.crm}
+          </Text>
         </View>
-        
-        {/* Ícone triangular para expandir/colapsar */}
+
         <Image
           source={IconeSeta}
           style={[
@@ -86,22 +81,24 @@ const MedicoCard = ({ medico, navigation }) => {
         />
       </TouchableOpacity>
 
-      {/* SEÇÃO EXPANSÍVEL (Detalhes) */}
       {isExpanded && (
         <View style={cardStyles.details}>
           <Text style={cardStyles.detailText}>Email: {medico.email}</Text>
           <Text style={cardStyles.detailText}>Telefone: {medico.telefone}</Text>
-          <Text style={cardStyles.detailText}>Endereço: {medico.endereco}</Text>
-          
+          <Text style={cardStyles.detailText}>
+            Endereço: {medico.endereco.logradouro}, {medico.endereco.cidade}
+          </Text>
+
           <View style={cardStyles.actionButtons}>
             <Button
               title="Editar"
-              onPress={() => navigation.navigate('EmConstrucao')} // Deveria ser uma tela de edição
-            />
+              onPress={() =>
+                navigation.navigate('MedicoForm', { medico })
+              }/>
             <Button
               title="Desativar Perfil"
               color="red"
-              onPress={() => navigation.navigate('EmConstrucao')} 
+              onPress={() => navigation.navigate('EmConstrucao')}
             />
           </View>
         </View>
@@ -110,19 +107,49 @@ const MedicoCard = ({ medico, navigation }) => {
   );
 };
 
-// =========================================================================
+// =====================================================================
 // TELA PRINCIPAL
-// =========================================================================
-const Op1Screen = ({ navigation, medicos }) => {
+// =====================================================================
+const Op1Screen = ({ navigation }) => {
+  const [medicos, setMedicos] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const isFocused = useIsFocused();
 
-  // Use useMemo para recalcular as seções apenas quando 'medicos' ou 'searchText' mudar
-  const sections = useMemo(() => groupAndFilterMedicos(medicos, searchText), [medicos, searchText]);
+  // Buscar médicos ao carregar a tela
+  useEffect(() => {
+    if (isFocused) {
+      carregarMedicos();
+    }
+  }, [isFocused]);
+
+  const carregarMedicos = async () => {
+    try {
+      const response = await api.get("/medicos?size=100");
+      const lista = response.data.content;
+
+      // Buscar detalhes completos de cada médico
+      const detalhes = await Promise.all(
+        lista.map(async (m) => {
+          const resp = await api.get(`/medicos/${m.id}`);
+          return resp.data;
+        })
+      );
+
+      setMedicos(detalhes);
+    } catch (error) {
+      console.log("Erro ao carregar médicos:", error);
+    }
+  };
+
+  const sections = useMemo(
+    () => groupAndFilterMedicos(medicos, searchText),
+    [medicos, searchText]
+  );
 
   return (
     <View style={styles.container}>
       
-      {/* CAMPO PESQUISAR (Não rolável) */}
+      {/* CAMPO DE BUSCA */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -133,35 +160,36 @@ const Op1Screen = ({ navigation, medicos }) => {
         <Image source={IconeLupa} style={styles.searchIcon} />
       </View>
 
-      {/* LISTA ROLÁVEL (Ocupa 80% da tela) */}
+      {/* LISTA */}
       <View style={styles.listWrapper}>
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <MedicoCard medico={item} navigation={navigation} />}
+          renderItem={({ item }) => (
+            <MedicoCard medico={item} navigation={navigation} />
+          )}
           renderSectionHeader={({ section: { title } }) => (
             <Text style={styles.sectionHeader}>{title}</Text>
           )}
-          // Estilo para o SectionList
           contentContainerStyle={styles.sectionListContent}
-          stickySectionHeadersEnabled={true} // Mantém as letras fixas no topo
+          stickySectionHeadersEnabled={true}
         />
       </View>
 
-      {/* BOTÃO FIXO (Não rolável) */}
+      {/* BOTÃO FIXO */}
       <View style={styles.fixedButtonContainer}>
         <Button
           title="Cadastrar Novo Perfil"
-          onPress={() => navigation.navigate('EmConstrucao')} // Exemplo
+          onPress={() => navigation.navigate('MedicoForm', { medico: null })}
         />
       </View>
     </View>
   );
 };
 
-// =========================================================================
+// =====================================================================
 // ESTILOS
-// =========================================================================
+// =====================================================================
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
@@ -189,12 +217,10 @@ const styles = StyleSheet.create({
     tintColor: '#aaa',
   },
   listWrapper: {
-    // Ocupa o restante do espaço após o campo de pesquisa, 
-    // mas antes do botão fixo. Usamos flex: 1 para o SectionList.
-    flex: 1, 
+    flex: 1,
   },
   sectionListContent: {
-    paddingBottom: 10, // Espaçamento extra no final da lista
+    paddingBottom: 10,
   },
   sectionHeader: {
     fontSize: 20,
@@ -205,7 +231,6 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   fixedButtonContainer: {
-    // Este container é fixo na parte inferior
     padding: 10,
     backgroundColor: '#fff',
     borderTopWidth: 1,
@@ -220,7 +245,7 @@ const cardStyles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 5,
     marginHorizontal: 10,
-    overflow: 'hidden', // Importante para o LayoutAnimation
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#eee',
   },
