@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  View, 
-  Text, 
-  TextInput, 
-  ScrollView, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Alert,
-  Platform,
+  View, Text, TextInput, ScrollView, StyleSheet, 
+  TouchableOpacity, Alert, Platform
 } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
 
-// Lista de Especialidades para o Picker
 const especialidades = [
-  'CARDIOLOGIA', 'PEDIATRIA', 'DERMATOLOGIA', 'GINECOLOGIA', 
+  'CARDIOLOGIA', 'PEDIATRIA', 'DERMATOLOGIA', 'GINECOLOGIA',
   'NEUROLOGIA', 'OFTALMOLOGIA', 'CLINICA_GERAL'
 ];
 
-// Estado inicial vazio para um novo médico
 const initialMedicoState = {
   nome: '',
   especialidade: especialidades[0],
@@ -39,12 +31,7 @@ const MedicoForm = ({ medico, onSave, onCancel, navigation }) => {
   const [errors, setErrors] = useState({});
 
   const isEditing = !!medico;
-  const buttonTitle = isEditing ? 'Concluir Edição' : 'Concluir Cadastro';
-
-  const requiredFields = [
-    'nome', 'especialidade', 'crm', 'email', 'telefone', 
-    'logradouro', 'numero', 'bairro', 'cidade', 'uf', 'cep'
-  ];
+  const buttonTitle = isEditing ? "Salvar Alterações" : "Concluir Cadastro";
 
   useEffect(() => {
     setFormData(medico || initialMedicoState);
@@ -52,69 +39,85 @@ const MedicoForm = ({ medico, onSave, onCancel, navigation }) => {
 
   const handleChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
-
     if (errors[name]) {
-      setErrors(prev => {
-        const updated = { ...prev };
-        delete updated[name];
-        return updated;
-      });
+      const updated = { ...errors };
+      delete updated[name];
+      setErrors(updated);
     }
   };
 
   const validate = () => {
-    let valid = true;
+    let ok = true;
     const newErrors = {};
 
-    requiredFields.forEach(field => {
-      if (!formData[field] || String(formData[field]).trim() === '') {
-        newErrors[field] = 'Campo Obrigatório';
-        valid = false;
+    const required = [
+      "nome", "telefone", "logradouro", "numero", 
+      "bairro", "cidade", "uf", "cep"
+    ];
+
+    if (!isEditing) {
+      required.push("email", "crm", "especialidade");
+    }
+
+    required.forEach(field => {
+      if (!formData[field] || formData[field].trim() === "") {
+        newErrors[field] = "Campo obrigatório";
+        ok = false;
       }
     });
 
-    // CEP com apenas dígitos
     if (formData.cep && !/^\d{8}$/.test(formData.cep)) {
-      newErrors.cep = 'CEP deve conter 8 dígitos numéricos';
-      valid = false;
+      newErrors.cep = "CEP deve ter 8 dígitos";
+      ok = false;
     }
 
     setErrors(newErrors);
-    return valid;
+    return ok;
   };
 
   const handleSubmit = () => {
     if (!validate()) {
-      Alert.alert('Erro', 'Por favor, corrija os campos destacados.');
+      Alert.alert("Atenção", "Preencha os campos obrigatórios.");
       return;
     }
 
-    // Montando o JSON exato esperado pelo backend
-    const medicoFormatado = {
-      nome: formData.nome,
-      email: formData.email,
-      telefone: formData.telefone,
-      crm: formData.crm,
-      especialidade: formData.especialidade.toUpperCase(),
-      endereco: {
-        logradouro: formData.logradouro,
-        numero: formData.numero,
-        complemento: formData.complemento,
-        bairro: formData.bairro,
-        cidade: formData.cidade,
-        uf: formData.uf.toUpperCase(),
-        cep: formData.cep.replace(/\D/g, ''), // Remove qualquer não número
-      }
-    };
+    let payload = {};
 
-    onSave(medicoFormatado);
+    if (isEditing) {
+      payload = {
+        id: medico.id,
+        nome: formData.nome,
+        telefone: formData.telefone,
+        endereco: {
+          logradouro: formData.logradouro,
+          numero: formData.numero,
+          complemento: formData.complemento,
+          bairro: formData.bairro,
+          cidade: formData.cidade,
+          uf: formData.uf.toUpperCase(),
+          cep: formData.cep,
+        }
+      };
+    } else {
+      payload = {
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone,
+        crm: formData.crm,
+        especialidade: formData.especialidade,
+        endereco: {
+          logradouro: formData.logradouro,
+          numero: formData.numero,
+          complemento: formData.complemento,
+          bairro: formData.bairro,
+          cidade: formData.cidade,
+          uf: formData.uf.toUpperCase(),
+          cep: formData.cep,
+        }
+      };
+    }
 
-    Alert.alert(
-      isEditing ? 'Sucesso' : 'Cadastro Concluído',
-      isEditing ? 'Dados do médico atualizados.' : 'Novo médico cadastrado com sucesso!'
-    );
-
-    navigation.goBack();
+    onSave(payload);
   };
 
   const ValidatedInput = ({ label, name, ...props }) => (
@@ -124,253 +127,115 @@ const MedicoForm = ({ medico, onSave, onCancel, navigation }) => {
       <TextInput
         style={[
           formStyles.input,
-          props.style,
           errors[name] && formStyles.inputError
         ]}
-        value={String(formData[name] || '')}
-        onChangeText={(text) => handleChange(name, text)}
+        value={String(formData[name] || "")}
+        onChangeText={(t) => handleChange(name, t)}
         {...props}
       />
-
-      {errors[name] && <Text style={formStyles.errorText}>{errors[name]}</Text>}
+      {errors[name] && (
+        <Text style={formStyles.errorText}>{errors[name]}</Text>
+      )}
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-
+      <ScrollView style={styles.scroll}>
+        
         <Text style={styles.title}>
-          {isEditing ? 'Editar Perfil' : 'Novo Cadastro'}
+          {isEditing ? "Editar Médico" : "Cadastrar Médico"}
         </Text>
 
-        {/* =========================== PROFISSIONAL */}
-        <Text style={styles.sectionHeader}>1. Profissional</Text>
+        <ValidatedInput label="Nome" name="nome" />
 
-        <ValidatedInput 
-          label="Nome Completo"
-          name="nome"
-          placeholder="Ex: Ana Maria da Silva"
-        />
+        {!isEditing && (
+          <>
+            <Text style={formStyles.label}>Especialidade</Text>
+            <View style={formStyles.pickerWrapper}>
+              <Picker
+                selectedValue={formData.especialidade}
+                onValueChange={(v) => handleChange("especialidade", v)}
+              >
+                {especialidades.map(e => (
+                  <Picker.Item key={e} label={e} value={e} />
+                ))}
+              </Picker>
+            </View>
 
-        {/* Especialidade */}
-        <View style={formStyles.inputGroup}>
-          <Text style={formStyles.label}>Especialidade</Text>
+            <ValidatedInput label="CRM" name="crm" />
+            <ValidatedInput label="Email" name="email" />
+          </>
+        )}
 
-          <View style={[
-            formStyles.pickerWrapper,
-            errors.especialidade && formStyles.inputError
-          ]}>
-            <Picker
-              selectedValue={formData.especialidade}
-              onValueChange={(value) => handleChange('especialidade', value)}
-              style={formStyles.picker}
-            >
-              {especialidades.map(esp => (
-                <Picker.Item key={esp} label={esp} value={esp} />
-              ))}
-            </Picker>
-          </View>
+        <ValidatedInput label="Telefone" name="telefone" />
 
-          {errors.especialidade && (
-            <Text style={formStyles.errorText}>{errors.especialidade}</Text>
-          )}
-        </View>
+        <Text style={styles.section}>Endereço</Text>
 
-        <ValidatedInput 
-          label="CRM"
-          name="crm"
-          placeholder="Ex: 12345"
-        />
+        <ValidatedInput label="Logradouro" name="logradouro" />
+        <ValidatedInput label="Número" name="numero" />
+        <ValidatedInput label="Complemento" name="complemento" />
+        <ValidatedInput label="Bairro" name="bairro" />
+        <ValidatedInput label="Cidade" name="cidade" />
 
-        {/* =========================== CONTATOS */}
-        <Text style={styles.sectionHeader}>2. Contatos</Text>
+        <ValidatedInput label="UF" name="uf" maxLength={2} />
+        <ValidatedInput label="CEP" name="cep" keyboardType="numeric" maxLength={8} />
 
-        <ValidatedInput 
-          label="Email"
-          name="email"
-          placeholder="email@exemplo.com"
-          keyboardType="email-address"
-        />
-
-        <ValidatedInput 
-          label="Telefone Celular"
-          name="telefone"
-          placeholder="(XX) XXXXX-XXXX"
-          keyboardType="phone-pad"
-        />
-
-        {/* =========================== ENDEREÇO */}
-        <Text style={styles.sectionHeader}>3. Endereço Profissional</Text>
-
-        <ValidatedInput 
-          label="Logradouro"
-          name="logradouro"
-          placeholder="Ex: Rua das Flores"
-        />
-
-        <ValidatedInput 
-          label="Bairro"
-          name="bairro"
-          placeholder="Ex: Centro"
-        />
-
-        <View style={formStyles.row}>
-          <ValidatedInput 
-            label="Número"
-            name="numero"
-            placeholder="Nº"
-            keyboardType="numeric"
-            style={formStyles.inputHalf}
-          />
-
-          <ValidatedInput 
-            label="Complemento"
-            name="complemento"
-            placeholder="Apto / Sala (Opcional)"
-            style={formStyles.inputHalf}
-          />
-        </View>
-
-        <ValidatedInput 
-          label="Cidade"
-          name="cidade"
-          placeholder="Ex: Belo Horizonte"
-        />
-
-        <View style={formStyles.row}>
-          <ValidatedInput 
-            label="UF"
-            name="uf"
-            placeholder="Ex: MG"
-            maxLength={2}
-            style={formStyles.inputQuarter}
-          />
-
-          <ValidatedInput 
-            label="CEP"
-            name="cep"
-            placeholder="Somente números"
-            maxLength={8}
-            keyboardType="numeric"
-            style={formStyles.inputThreeQuarter}
-          />
-        </View>
       </ScrollView>
 
-      {/* BOTÕES */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[formStyles.button, formStyles.saveButton]}
-          onPress={handleSubmit}
-        >
-          <Text style={formStyles.buttonText}>{buttonTitle}</Text>
+      <View style={styles.buttons}>
+        <TouchableOpacity style={styles.save} onPress={handleSubmit}>
+          <Text style={styles.saveText}>{buttonTitle}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[formStyles.button, formStyles.cancelButton]}
-          onPress={onCancel || (() => navigation.goBack())}
-        >
-          <Text style={formStyles.buttonText}>Cancelar</Text>
+        <TouchableOpacity style={styles.cancel} onPress={onCancel || navigation.goBack}>
+          <Text style={styles.cancelText}>Cancelar</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-// ==========================================================
-// ESTILOS
-// ==========================================================
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 120,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#333',
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
-    color: '#007AFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    paddingBottom: 5,
-  },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  container: { flex: 1, backgroundColor: "#fff" },
+  scroll: { padding: 20 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
+  section: { marginTop: 20, fontWeight: "bold", color: "#007AFF" },
+  buttons: {
+    flexDirection: "row",
     padding: 10,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    borderColor: "#ddd"
   },
+  save: {
+    flex: 1, padding: 15, backgroundColor: "#007AFF",
+    marginRight: 5, borderRadius: 8, alignItems: "center"
+  },
+  cancel: {
+    flex: 1, padding: 15, backgroundColor: "#6c757d",
+    marginLeft: 5, borderRadius: 8, alignItems: "center"
+  },
+  saveText: { color: "#fff", fontWeight: "bold" },
+  cancelText: { color: "#fff", fontWeight: "bold" }
 });
 
 const formStyles = StyleSheet.create({
-  inputGroup: { marginBottom: 15 },
-  label: { fontSize: 14, marginBottom: 5, fontWeight: '500', color: '#333' },
+  inputGroup: { marginBottom: 12 },
+  label: { fontWeight: "600", marginBottom: 4 },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-    height: 45,
+    borderWidth: 1, borderColor: "#ccc",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8, padding: 10
+  },
+  pickerWrapper: {
+    borderWidth: 1, borderColor: "#ccc",
+    borderRadius: 8, backgroundColor: "#f5f5f5",
+    marginBottom: 12
   },
   inputError: {
-    borderColor: 'red',
-    borderWidth: 2,
-    backgroundColor: '#ffe8e8',
+    borderColor: "red", borderWidth: 2
   },
-  errorText: { fontSize: 12, color: 'red', marginTop: 4 },
-
-  row: { flexDirection: 'row', gap: 10 },
-
-  inputHalf: { flex: 1 },
-  inputQuarter: { flex: 0.3 },
-  inputThreeQuarter: { flex: 0.7 },
-
-  pickerWrapper: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
-    justifyContent: 'center',
-    height: 45,
-    overflow: 'hidden',
-  },
-
-  picker: {
-    height: Platform.OS === 'ios' ? undefined : 45,
-    width: '100%',
-  },
-
-  button: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  saveButton: { backgroundColor: '#007AFF' },
-  cancelButton: { backgroundColor: '#6c757d' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  errorText: { color: "red", fontSize: 12 }
 });
 
 export default MedicoForm;
