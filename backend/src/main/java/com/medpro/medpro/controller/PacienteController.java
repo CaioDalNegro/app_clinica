@@ -26,17 +26,18 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("pacientes")
 public class PacienteController {
-    
-    
+
     @Autowired
     private PacienteRepository pacienteRepository;
 
+    // Cadastra um novo paciente
     @PostMapping
     @Transactional
     public void cadastrar(@RequestBody DadosCadastroPaciente dados){
        pacienteRepository.save(new Paciente(dados));
     }
 
+    // Lista pacientes com paginação
     @GetMapping
     public ResponseEntity <Page<DadosListagemPaciente>> listar(Pageable paginacao){
         var page = pacienteRepository.findAll(paginacao)
@@ -44,28 +45,32 @@ public class PacienteController {
         return ResponseEntity.ok(page);
     }
 
-    @PutMapping
+    // Atualiza os dados de um paciente
+    @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity <DadosDetalhamentoPaciente> atualizar(@RequestBody @Valid DadosAtualizacaoPaciente dados) {
-        var paciente = pacienteRepository.getReferenceById(dados.id());
+    public ResponseEntity<DadosDetalhamentoPaciente> atualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid DadosAtualizacaoPaciente dados) {
+
+        var paciente = pacienteRepository.getReferenceById(id);
         paciente.atualizarInformacoes(dados);
 
         return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
     }
 
+    // "Exclui" um paciente (geralmente torna inativo)
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity <Void> excluir(@PathVariable Long id) {
         var paciente = pacienteRepository.getReferenceById(id);
         paciente.excluir();
-
         return ResponseEntity.noContent().build();
     }
 
+    // Detalha um único paciente
     @GetMapping("/{id}")
     public ResponseEntity <DadosDetalhamentoPaciente> detalhar(@PathVariable Long id) {
         var paciente = pacienteRepository.getReferenceById(id);
-
         return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
     }
 }

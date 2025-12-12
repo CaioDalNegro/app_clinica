@@ -11,6 +11,7 @@ import Medico from './src/screens/Medico/Medico';
 import Paciente from './src/screens/Paciente/Paciente';
 import Consulta from './src/screens/Consulta/Consulta';
 import CadastroEdicaoMedicoScreen from './src/screens/Medico/CadastroEdicaoMedicoScreen';
+import CadastroEdicaoPacienteScreen from './src/screens/Paciente/CadastroEdicaoPacienteScreen';
 
 const Stack = createStackNavigator();
 
@@ -47,11 +48,10 @@ function App() {
         <Stack.Screen name="Consultas" component={Consulta} options={{ title: 'Consultas' }} />
 
         {/* TELA DE CADASTRO/EDIÇÃO REAL */}
-        <Stack.Screen
-          name="MedicoForm"
-          component={CadastroEdicaoMedicoScreen}
-          options={{ title: 'Gerenciar Médico' }}
-        />
+        <Stack.Screen name="MedicoForm" component={CadastroEdicaoMedicoScreen} options={{ title: 'Gerenciar Médico' }}/>
+
+        <Stack.Screen name="Paciente" component={Paciente} />
+        <Stack.Screen name="CadastroEdicaoPacienteScreen" component={CadastroEdicaoPacienteScreen} />
 
         {/* <Stack.Screen name="EmConstrucao" component={() => (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

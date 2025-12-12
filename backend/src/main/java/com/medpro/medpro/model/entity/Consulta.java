@@ -32,27 +32,30 @@ public class Consulta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Relacionamento com Paciente
     @ManyToOne
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;
 
+    // Relacionamento com Médico
     @ManyToOne
     @JoinColumn(name = "id_medico", nullable = false)
     private Medico medico;
 
+    // Horário da consulta
     @Column(name = "data_hora_consulta", nullable = false)
     private LocalDateTime dataHoraConsulta;
 
     private boolean cancelada;
 
-    // --- Regra de negócio na própria entidade ---
+    // Valida regras de horário no momento do agendamento
     public void validarDataInicial() {
         if (this.dataHoraConsulta.isBefore(LocalDateTime.now().plusMinutes(30))) {
             throw new IllegalArgumentException("Consulta deve ser agendada com 30 minutos de antecedência.");
         }
 
         int hora = dataHoraConsulta.getHour();
-        int diaSemana = dataHoraConsulta.getDayOfWeek().getValue(); // 1=Segunda ... 7=Domingo
+        int diaSemana = dataHoraConsulta.getDayOfWeek().getValue();
 
         if (diaSemana == 7) {
             throw new IllegalArgumentException("A clínica não funciona aos domingos.");
@@ -63,18 +66,16 @@ public class Consulta {
         }
     }
 
-    // guarda o motivo (obrigatório)
     @Enumerated(EnumType.STRING)
     private MotivoCancelamento motivoCancelamento;
 
+    // Realiza o cancelamento aplicando regras de negócio
     public void cancelar(MotivoCancelamento motivo) {
 
-        // valida se já está cancelada
-        if (this.cancelada) {
+        if (this.cancelada)
             throw new IllegalArgumentException("A consulta já foi cancelada.");
-        }
 
-        // Regra: cancelamento só pode ocorrer 24 horas antes
+        // Regra das 24h
         var agora = LocalDateTime.now();
         var diferencaHoras = Duration.between(agora, this.dataHoraConsulta).toHours();
 
@@ -82,10 +83,7 @@ public class Consulta {
             throw new IllegalArgumentException("Consulta só pode ser cancelada com 24 horas de antecedência.");
         }
 
-        // Marca como cancelada
         this.cancelada = true;
-
-        // Armazena o motivo
         this.motivoCancelamento = motivo;
     }
 }

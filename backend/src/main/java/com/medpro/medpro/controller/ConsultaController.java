@@ -17,6 +17,7 @@ public class ConsultaController {
     @Autowired
     private ConsultaService service;
 
+    // Agenda uma consulta
     @PostMapping
     @Transactional
     public ResponseEntity<?> agendar(@RequestBody @Valid DadosAgendamentoConsulta dados) {
@@ -24,6 +25,7 @@ public class ConsultaController {
         return ResponseEntity.ok(new DadosDetalhamentoConsulta(consulta));
     }
 
+    // Cancela uma consulta (só retorna mensagem, não implementa regra)
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> deletar(@PathVariable Long id){
